@@ -18,7 +18,7 @@ describe('server.js', () => {
       expect(response.status).toEqual(expectedStatusCode);
     });
 
-    it('should return a JWT on successful login', async () => {
+    it('should return a JWT on successful registration', async () => {
       const response = await request(server).post('/api/auth/register').send({
         username: 'billy',
         password: '20 oz steak'
@@ -61,6 +61,64 @@ describe('server.js', () => {
     });
   });
 
-  // describe('login endpoint', () => {
-  // });
+  describe('login endpoint', () => {
+    it('should return OK status code on successful login', async () => {
+      const expectedResponse = 200;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send(usernameAndPassword);
+      expect(loginResponse.status).toEqual(expectedResponse);
+    });
+
+    it('should return a JWT on successful login', async () => {
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send(usernameAndPassword);
+      expect(typeof loginResponse.body.token).toEqual('string');
+    });
+
+    it('should return 401 status code on bad password', async () => {
+      const expectedResponse = 401;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send({...usernameAndPassword, password: 'hello world'});
+      expect(loginResponse.status).toEqual(expectedResponse);
+    });
+
+    it('should return 401 status code on unknown user', async () => {
+      const expectedResponse = 401;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send({...usernameAndPassword, username: 'foobar'});
+      expect(loginResponse.status).toEqual(expectedResponse);
+    });
+  });
 });
