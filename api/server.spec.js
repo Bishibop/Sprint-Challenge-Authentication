@@ -121,4 +121,59 @@ describe('server.js', () => {
       expect(loginResponse.status).toEqual(expectedResponse);
     });
   });
+
+  describe('jokes endpoint', () => {
+    it('should return 401 if no token is provided', async () => {
+      const expectedResponse = 401;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send(usernameAndPassword);
+      const jokeResponse = await request(server)
+        .get('/api/jokes');
+      expect(jokeResponse.status).toEqual(expectedResponse);
+    });
+
+    it('should return 401 if a bad token is provided', async () => {
+      const expectedResponse = 401;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send(usernameAndPassword);
+      const jokeResponse = await request(server)
+        .get('/api/jokes')
+        .set({ Authorization: 'xxxxxxxx.xxxxxxxxxxxx.xxxxxxxxxx' });
+      expect(jokeResponse.status).toEqual(expectedResponse);
+    });
+
+    it('should return OK if a proper authentication is provided', async () => {
+      const expectedResponse = 200;
+      usernameAndPassword = {
+        username: 'billy',
+        password: '20 oz steak'
+      };
+      const registerResponse = await request(server)
+        .post('/api/auth/register')
+        .send(usernameAndPassword);
+      const loginResponse = await request(server)
+        .post('/api/auth/login')
+        .send(usernameAndPassword);
+      const jokeResponse = await request(server)
+        .get('/api/jokes')
+        .set({ Authorization: loginResponse.body.token });
+      expect(jokeResponse.status).toEqual(expectedResponse);
+    });
+  });
 });
